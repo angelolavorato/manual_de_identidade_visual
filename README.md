@@ -58,6 +58,10 @@ O primeiro início pode demorar um pouco mais por causa da extração interna de
 
 - **Tema claro e escuro:** alterne pelo seletor no canto superior direito. A preferência é salva automaticamente em `preferencias.json` e restaurada ao abrir o programa, independentemente do perfil de material.
 - **Editar disciplinas deste ano:** abre um editor simples, uma disciplina por linha.
+  O catálogo inicial segue os nomes e a ordem de `Ementa EMTI.pdf`, ignorando os bimestres:
+  2 disciplinas no 1º ano, 7 no 2º e 7 no 3º.
+  As edições são salvas em `disciplinas-ementa-emti.json` na pasta de configuração local.
+  O antigo `disciplinas.json` é preservado, mas não é carregado nesta versão do catálogo.
 - **Salvar perfil:** salva a configuração atual em `.json`.
 - **Carregar perfil:** reutiliza uma configuração salva.
 - **Último perfil:** restaurado automaticamente ao abrir o programa.

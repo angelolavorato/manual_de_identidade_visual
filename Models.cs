@@ -5,7 +5,7 @@ namespace GeradorMateriaisDesktop;
 public sealed class MaterialConfig
 {
     public string Ano { get; set; } = "3º ano";
-    public string Disciplina { get; set; } = "Redes de Computadores";
+    public string Disciplina { get; set; } = "Rede de Computadores";
     public string Trimestre { get; set; } = "3º trimestre";
     public string Turma { get; set; } = "";
     public string Tipo { get; set; } = "Apostila";
@@ -48,7 +48,8 @@ internal static class Storage
     };
 
     public static string LastProfilePath => Path.Combine(DirectoryPath, "ultimo-perfil.json");
-    public static string CatalogPath => Path.Combine(DirectoryPath, "disciplinas.json");
+    // O catálogo anterior fica preservado; a ementa inicia uma nova lista editável.
+    public static string CatalogPath => Path.Combine(DirectoryPath, "disciplinas-ementa-emti.json");
     public static string SettingsPath => Path.Combine(DirectoryPath, "preferencias.json");
 
     public static void WriteJson<T>(string path, T value)

@@ -4,21 +4,22 @@ public sealed class CourseCatalog
 {
     private readonly Dictionary<string, List<string>> _data;
 
+    // Disciplinas por ano conforme Ementa EMTI.pdf, sem a divisão em bimestres.
     private static Dictionary<string, List<string>> Defaults() => new()
     {
         ["1º ano"] = [
-            "Informática Básica", "Lógica de Programação",
-            "Criação de Jogos Digitais", "Inovação Social e Científica"
+            "Informática Básica", "Lógica de Programação"
         ],
         ["2º ano"] = [
-            "Arquitetura e Manutenção de Computadores", "Desenvolvimento Web",
-            "Lógica de Programação", "Sistemas Operacionais", "Noções de Robótica",
-            "Programação Orientada a Objetos (Java)"
+            "Arquitetura e Manutenção de Computadores", "HTML / CSS",
+            "Gestão do Tempo", "Sistemas Operacionais",
+            "Programação Orientada a Objetos / Java",
+            "Programação Web (JavaScript / PHP / MySQL)", "Noções de Robótica"
         ],
         ["3º ano"] = [
-            "Design", "Gerenciador de Conteúdo / Banco de Dados",
-            "Laboratório de Software", "Laboratório Web", "Laboratório de Hardware",
-            "Programação Web II", "Redes de Computadores"
+            "Rede de Computadores", "Design", "Gerenciador de Conteúdo / Banco de Dados",
+            "Programação Web II (PHP / MySQL)", "Laboratório de Hardware",
+            "Laboratório de Software", "Laboratório Web"
         ]
     };
 
