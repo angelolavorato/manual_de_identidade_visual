@@ -45,6 +45,9 @@ public sealed class MainForm : Form
     private SplitContainer _split = null!;
     private string _manualPath = "";
     private bool _suspendEvents;
+    private readonly ComboBox _themeSelector = Cb("Tema claro", "Tema escuro");
+    private AppTheme _appTheme = new(false);
+    private bool _hasPromptWarning;
 
     public MainForm()
     {
@@ -56,6 +59,7 @@ public sealed class MainForm : Form
         Font = new Font("Segoe UI", 9.5f);
         AutoScaleMode = AutoScaleMode.Dpi;
         BuildUi();
+        LoadTheme();
         ConnectEvents();
 
         try
@@ -79,7 +83,7 @@ public sealed class MainForm : Form
         };
         FormClosing += (_, _) =>
         {
-            try { Storage.WriteJson(Storage.LastProfilePath, Capture()); }
+            try { Storage.WriteJson(Storage.LastProfilePath, CaptureMaterialConfig()); }
             catch { /* Ausência de permissão de gravação não impede o fechamento. */ }
         };
     }
@@ -121,6 +125,7 @@ public sealed class MainForm : Form
         var button = new Button
         {
             Text = caption,
+            Tag = filled ? ThemeRole.PrimaryButton : null,
             FlatStyle = FlatStyle.Flat,
             BackColor = filled ? Blue : Color.White,
             ForeColor = filled ? Color.White : Navy,
@@ -138,6 +143,7 @@ public sealed class MainForm : Form
     private static Label SectionTitle(string title) => new()
     {
         Text = title,
+        Tag = ThemeRole.Heading,
         Font = new Font("Segoe UI Semibold", 11f),
         ForeColor = Navy,
         Height = 32,
@@ -199,6 +205,7 @@ public sealed class MainForm : Form
             Padding = new Padding(15, 12, 15, 11),
             Margin = new Padding(3, 4, 3, 12),
             BackColor = Color.White,
+            Tag = ThemeRole.Surface,
             CellBorderStyle = TableLayoutPanelCellBorderStyle.None
         };
         card.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -224,7 +231,7 @@ public sealed class MainForm : Form
 
     private void BuildUi()
     {
-        var banner = new Panel { Height = 88, Dock = DockStyle.Top, BackColor = Navy };
+        var banner = new Panel { Height = 88, Dock = DockStyle.Top, BackColor = Navy, Tag = ThemeRole.Banner };
         var title = new Label
         {
             Text = "GERADOR DE MATERIAIS DIDÁTICOS",
@@ -243,6 +250,11 @@ public sealed class MainForm : Form
         };
         banner.Controls.Add(title);
         banner.Controls.Add(subtitle);
+        var themePanel = new Panel { Dock = DockStyle.Right, Width = 190, Padding = new Padding(12, 28, 20, 20) };
+        _themeSelector.Dock = DockStyle.Top;
+        _themeSelector.AccessibleName = "Tema da interface";
+        themePanel.Controls.Add(_themeSelector);
+        banner.Controls.Add(themePanel);
 
         _split = new SplitContainer
         {
@@ -315,6 +327,7 @@ public sealed class MainForm : Form
         previewHeader.Controls.Add(new Label
         {
             Text = "Solicitação gerada",
+            Tag = ThemeRole.Heading,
             Font = new Font("Segoe UI Semibold", 13),
             ForeColor = Navy,
             Dock = DockStyle.Left,
@@ -380,6 +393,37 @@ public sealed class MainForm : Form
         if (_left is null) return;
         int width = Math.Max(385, _left.ClientSize.Width - _left.Padding.Horizontal - 11);
         foreach (var card in _cards) card.Width = width;
+    }
+
+    private void LoadTheme()
+    {
+        bool dark = false;
+        try { dark = Storage.ReadJson<AppSettings>(Storage.SettingsPath)?.DarkTheme ?? false; }
+        catch { /* Preferências inválidas não impedem a abertura. */ }
+        _themeSelector.SelectedIndex = dark ? 1 : 0;
+        ApplyTheme(dark);
+        _themeSelector.SelectedIndexChanged += (_, _) =>
+        {
+            bool selectedDark = _themeSelector.SelectedIndex == 1;
+            ApplyTheme(selectedDark);
+            try { Storage.WriteJson(Storage.SettingsPath, new AppSettings { DarkTheme = selectedDark }); }
+            catch (Exception ex) { ShowError(ex); }
+        };
+    }
+
+    private void ApplyTheme(bool dark)
+    {
+        _appTheme = new AppTheme(dark);
+        _manualLabel.Tag = ThemeRole.Muted;
+        _length.Tag = ThemeRole.Muted;
+        SuspendLayout();
+        try
+        {
+            _appTheme.Apply(this);
+            _status.ForeColor = _hasPromptWarning ? _appTheme.Warning : _appTheme.Muted;
+        }
+        finally { ResumeLayout(true); }
+        Invalidate(true);
     }
 
     private void ConnectEvents()
@@ -479,7 +523,7 @@ public sealed class MainForm : Form
         RefreshPrompt();
     }
 
-    private MaterialConfig Capture() => new()
+    private MaterialConfig CaptureMaterialConfig() => new()
     {
         Ano = _year.Text,
         Disciplina = _subject.Text,
@@ -510,11 +554,12 @@ public sealed class MainForm : Form
     private void RefreshPrompt()
     {
         if (_suspendEvents || _preview.IsDisposed) return;
-        string generated = PromptGenerator.Build(Capture(), out string? warning);
+        string generated = PromptGenerator.Build(CaptureMaterialConfig(), out string? warning);
         _preview.Text = generated;
         _length.Text = $"{generated.Length:N0} caracteres";
         _status.Text = warning ?? "Configuração pronta. Copie o prompt e utilize-o no ChatGPT.";
-        _status.ForeColor = warning is null ? Color.DimGray : Color.DarkRed;
+        _hasPromptWarning = warning is not null;
+        _status.ForeColor = _hasPromptWarning ? _appTheme.Warning : _appTheme.Muted;
     }
 
     private void CopyPrompt()
@@ -561,7 +606,7 @@ public sealed class MainForm : Form
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
         try
         {
-            Storage.WriteJson(dialog.FileName, Capture());
+            Storage.WriteJson(dialog.FileName, CaptureMaterialConfig());
             _status.Text = "Perfil salvo com sucesso.";
         }
         catch (Exception ex) { ShowError(ex); }
@@ -624,6 +669,7 @@ public sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             Text = $"Disciplinas do {year}: informe uma por linha.",
+            Tag = ThemeRole.Heading,
             ForeColor = Navy,
             Font = new Font("Segoe UI Semibold", 11),
             TextAlign = ContentAlignment.MiddleLeft
@@ -651,6 +697,7 @@ public sealed class MainForm : Form
         save.Width = 190;
         main.Controls.Add(save, 0, 2);
         dialog.Controls.Add(main);
+        _appTheme.Apply(dialog);
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
             FillSubjects();

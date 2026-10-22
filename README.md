@@ -56,6 +56,7 @@ O primeiro início pode demorar um pouco mais por causa da extração interna de
 
 ### Recursos extras
 
+- **Tema claro e escuro:** alterne pelo seletor no canto superior direito. A preferência é salva automaticamente em `preferencias.json` e restaurada ao abrir o programa, independentemente do perfil de material.
 - **Editar disciplinas deste ano:** abre um editor simples, uma disciplina por linha.
 - **Salvar perfil:** salva a configuração atual em `.json`.
 - **Carregar perfil:** reutiliza uma configuração salva.

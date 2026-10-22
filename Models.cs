@@ -30,6 +30,11 @@ public sealed class MaterialConfig
     public string ManualPath { get; set; } = "";
 }
 
+internal sealed class AppSettings
+{
+    public bool DarkTheme { get; set; }
+}
+
 internal static class Storage
 {
     public static string DirectoryPath => Path.Combine(
@@ -44,6 +49,7 @@ internal static class Storage
 
     public static string LastProfilePath => Path.Combine(DirectoryPath, "ultimo-perfil.json");
     public static string CatalogPath => Path.Combine(DirectoryPath, "disciplinas.json");
+    public static string SettingsPath => Path.Combine(DirectoryPath, "preferencias.json");
 
     public static void WriteJson<T>(string path, T value)
     {
